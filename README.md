@@ -199,3 +199,252 @@ You should see in your terminal a message indicating that the server is listenin
      ![Request: http://localhost:8000/submitstar](https://s3.amazonaws.com/video.udacity-data.com/topher/2019/April/5ca365d3_signing-message/signing-message.png)
 6. Retrieve Stars owned by me
     ![Request: http://localhost:8000/blocks/<WALLET_ADDRESS>](https://s3.amazonaws.com/video.udacity-data.com/topher/2019/April/5ca362b9_retrieve-stars/retrieve-stars.png)
+
+## Testscript
+
+1. Verify application started up. Console should say:
+    ```plain
+    /usr/bin/node ./app.js
+    Server Listening for port: 8000                                   app.js:51
+    ```
+    ![](screenshots/p1test__00000.png)
+
+2. Place get call to http://127.0.0.1:8000/block/height/0
+    ![](screenshots/p1test__00002.png)
+3. Post a JSON document to http://127.0.0.1:8000/requestValidation
+
+    ```json
+    {
+      "address" : "muHo1zGJXjLo1Rq5Ji9YGGNrCt5edZsgMj"
+    }
+    ```
+
+    ![](screenshots/p1test__00002.png)
+    other addresses:
+    ```json
+    {
+      "address": "mpFgDU3GJZ2NVrtTGnfLxZ3bBLLTmymTG5"
+    }
+    ```
+    ```json
+    {
+      "address": "mgSmQhW9fYKgNNHiDCogQS3d4PEFP4W3UM"
+    }
+    ```
+   Add screenshot of the request and response
+4. Take a screenshot of signing with wallet 
+    ![](screenshots/p1test__00003.png)
+5. Submit the star
+    * Record 1: Castor
+
+    ```json
+    {
+      "address": "muHo1zGJXjLo1Rq5Ji9YGGNrCt5edZsgMj",
+      "signature": "",
+      "message": "",
+      "star": {
+        "dec": "31° 53' 18.0\"",
+        "ra" : "07h 34m 36.0s",
+        "story": "Castor: Testing story 5.01"
+      }
+    }
+    ```
+
+    ![](screenshots/p1test__00004.png)
+
+6. Submit following stars for owners
+    Wrote Apache JMeter functional test to submit these.
+    ![](screenshots/p1test__00005.png)
+
+    * Record 2: Ksenia
+
+    ```json
+    {
+      "address": "muHo1zGJXjLo1Rq5Ji9YGGNrCt5edZsgMj",
+      "signature": "",
+      "message": "",
+      "star": {
+        "dec": "30° 14' 43.0\"",
+        "ra" : "07h 11m 08.4s",
+        "story": "Ksenia: Testing story 6.02"
+          }
+    }
+    ```
+
+    * Record 3: Mebsuta
+
+    ```json
+    {
+      "address": "mpFgDU3GJZ2NVrtTGnfLxZ3bBLLTmymTG5",
+      "signature": "",
+      "message": "",
+      "star": {
+        "dec": "25° 07' 52.0\"",
+        "ra" : "06h 43m 55.9s",
+        "story": "Mebsuta: Testing story 6.03"
+      }
+    }
+    ```
+
+    * Record 4: Tejat
+
+    ```json
+    {
+      "address": "mgSmQhW9fYKgNNHiDCogQS3d4PEFP4W3UM",
+      "signature": "",
+      "message": "",
+      "star": {
+        "dec": "22° 30' 49.0\"",
+        "ra" : "06h 22m 57.6s",
+        "story": "Tejat: Testing story 6.04"
+      }
+    }
+    ```
+
+    * Record 5: Propus
+
+    ```json
+    {
+      "address": "muHo1zGJXjLo1Rq5Ji9YGGNrCt5edZsgMj",
+      "signature": "",
+      "message": "",
+      "star": {
+        "dec": "22° 30' 24.0\"",
+        "ra" : "06h 14m 52.6s",
+        "story": "Propus: Testing story 6.05"
+      }
+    }
+    ```
+
+    * Record 6: Nucatel
+
+    ```json
+    {
+      "address": "mpFgDU3GJZ2NVrtTGnfLxZ3bBLLTmymTG5",
+      "signature": "",
+      "message": "",
+      "star": {
+        "dec": "20° 12' 44.0\"",
+        "ra" : "06h 28m 57.8s",
+        "story": "Nucatel: Testing story 6.06"
+      }
+    }
+    ```
+
+    * Record 7: Athena
+
+    ```json
+    {
+      "address": "mgSmQhW9fYKgNNHiDCogQS3d4PEFP4W3UM",
+      "signature": "",
+      "message": "",
+      "star": {
+        "dec": "16° 23' 57.0\"",
+        "ra" : "06h 37m 42.7s",
+        "story": "Athena: Testing story 6.07"
+      }
+    }
+    ```
+
+    * Record 8: Alzir
+
+    ```json
+    {
+      "address": "muHo1zGJXjLo1Rq5Ji9YGGNrCt5edZsgMj",
+      "signature": "",
+      "message": "",
+      "star": {
+        "dec": "12° 53' 44.0\"",
+        "ra" : "06h 45m 17.4s",
+        "story": "Alzir: Testing story 6.08"
+      }
+    }
+    ```
+
+    * Record 9: Mekbuda
+
+    ```json
+    {
+      "address": "mpFgDU3GJZ2NVrtTGnfLxZ3bBLLTmymTG5",
+      "signature": "",
+      "message": "",
+      "star": {
+        "dec": "20° 34' 13.0\"",
+        "ra" : "07h 04m 06.5s",
+        "story": "Mekbuda: Testing story 6.09"
+      }
+    }
+    ```
+
+    * Record 10: Wasat
+
+    ```json
+    {
+      "address": "mgSmQhW9fYKgNNHiDCogQS3d4PEFP4W3UM",
+      "signature": "",
+      "message": "",
+      "star": {
+        "dec": "21° 58' 56.0\"",
+        "ra" : "07h 20m 07.4s",
+        "story": "Wasat: Testing story 6.10"
+      }
+    }
+    ```
+
+    * Record 11: Kebash
+
+    ```json
+    {
+      "address": "muHo1zGJXjLo1Rq5Ji9YGGNrCt5edZsgMj",
+      "signature": "",
+      "message": "",
+      "star": {
+        "dec": "16° 32' 25.0\"",
+        "ra" : "07h 18m 05.6s",
+        "story": "Kebash: Testing story 6.11"
+      }
+    }
+    ```
+
+    * Record 12: Al Kirbab
+
+    ```json
+    {
+      "address": "mpFgDU3GJZ2NVrtTGnfLxZ3bBLLTmymTG5",
+      "signature": "",
+      "message": "",
+      "star": {
+        "dec": "24° 23' 53.0\"",
+        "ra" : "07h 44m 26.8s",
+        "story": "Al Kirbab: Testing story 6.12"
+      }
+    }
+    ```
+
+    * Record 13: Pollux
+
+    ```json
+    {
+      "address": "mgSmQhW9fYKgNNHiDCogQS3d4PEFP4W3UM",
+      "signature": "",
+      "message": "",
+      "star": {
+        "dec": "28° 01' 34.0\"",
+        "ra" : "07h 45m 18.9s",
+        "story": "Pollux: Testing story 6.13"
+      }
+    }
+    ```
+
+7. Request stars owned by "muHo1zGJXjLo1Rq5Ji9YGGNrCt5edZsgMj"
+    Expected list of stars: Castor, Ksenia, Propus, Alzir, Kebash
+    ![](screenshots/p1test__00006.png)
+8. Request stars owned by "mpFgDU3GJZ2NVrtTGnfLxZ3bBLLTmymTG5"
+    Expected list of stars: Mebsuta, Nucatel, Mekbuda, Al Kirab
+    ![](screenshots/p1test__00007.png)
+9. Request stars owned by "mgSmQhW9fYKgNNHiDCogQS3d4PEFP4W3UM"
+    Expected list of stars: Tejat, Athena, Wasat, Pollux
+    ![](screenshots/p1test__00008.png)
+10. Call validateChain endpoint
+    Expected valid and 13 records.
+    ![](screenshots/p1test__00009.png)
