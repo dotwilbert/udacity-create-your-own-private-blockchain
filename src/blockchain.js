@@ -11,6 +11,7 @@
 const SHA256 = require('crypto-js/sha256');
 const BlockClass = require('./block.js');
 const bitcoinMessage = require('bitcoinjs-message');
+const hex2ascii = require('hex2ascii');
 
 class Blockchain {
 
@@ -34,9 +35,21 @@ class Blockchain {
      * Passing as a data `{data: 'Genesis Block'}`
      */
     async initializeChain() {
-        if( this.height === -1){
-            let block = new BlockClass.Block({data: 'Genesis Block'});
-            await this._addBlock(block);
+        if (this.height === -1) {
+            let block = new BlockClass.Block({ data: 'Genesis Block' });
+            // (node:547420) UnhandledPromiseRejectionWarning: block 0 hash is invalid
+            // <node_internals>/internal/process/warning.js:25
+            // (node:547420) UnhandledPromiseRejectionWarning: Unhandled promise rejection. This error originated either by throwing inside of an async function without a catch block, or by rejecting a promise which was not handled with .catch(). (rejection id: 2)
+            // <node_internals>/internal/process/warning.js:25
+            // (node:547420) [DEP0018] DeprecationWarning: Unhandled promise rejections are deprecated. In the future, promise rejections that are not handled will terminate the Node.js process with a non-zero exit code.
+            // `await` only handles the resolved promise. Since _addblock can reject a promise,
+            // as per spec, we have to deal with it either wrap in a try-catch
+            // or deal with it as promise.
+            this._addBlock(block).then(b => {
+                return
+            }).catch(e => {
+                throw e
+            });
         }
     }
 
@@ -64,8 +77,45 @@ class Blockchain {
     _addBlock(block) {
         let self = this;
         return new Promise(async (resolve, reject) => {
-           
-        });
+            // TODO: This is a bit of an issue. Technically I think we need a
+            // semaphore to synchronize setting the block height and updating
+            // the chain.height
+            // Did some addtional testing and nodejs can and will service multiple
+            // requests when async calls are made. Two clients can interfere updating
+            // a value just read by another client: data consistency issue.
+            // Set block time
+            block.time = (new Date()).getTime().toString().slice(0, -3)
+            // Block height is determined by the chain height
+            block.height = self.height + 1
+            // If this is not the Genesis block (Block Height = 0)
+            // add the hash from the previous block
+            if (block.height > 0) {
+                block.previousBlockHash = self.chain[block.height - 1].hash
+            }
+            // Determine the hash of the block 
+            block.hash = SHA256(JSON.stringify(block)).toString()
+            // Add it to the chain
+            self.chain.push(block)
+            // Adjust the block height
+            ++self.height
+            self.validateChain().then(errorList => {
+                if (errorList.length !== 0) {
+                    // when there are errors
+                    //    * roll this block back
+                    //    * reject the addition
+                    // the assumption is that the probability that the rest
+                    // of the blocks are good is high, since chain is tested
+                    // after every addition.
+                    --self.height
+                    let trash = self.chain.pop()
+                    reject(errorList.join("\n"))
+                }
+                // Make the block available to the then function
+                resolve(block)
+            }).catch(err => {
+                reject(err)
+            })
+        })
     }
 
     /**
@@ -77,9 +127,11 @@ class Blockchain {
      * @param {*} address 
      */
     requestMessageOwnershipVerification(address) {
+        // resolve with the appropriately formatted string
+        // from spec: <WALLET_ADRESS>:${new Date().getTime().toString().slice(0,-3)}:starRegistry
         return new Promise((resolve) => {
-            
-        });
+            resolve(`${address}:${(new Date()).getTime().toString().slice(0, -3)}:starRegistry`)
+        })
     }
 
     /**
@@ -102,8 +154,34 @@ class Blockchain {
     submitStar(address, message, signature, star) {
         let self = this;
         return new Promise(async (resolve, reject) => {
-            
-        });
+            // both parseInt and bitcoinmessage.verify can throw something
+            // so wrap in try-catch
+            try {
+                // store message time
+                let mtime = parseInt(message.split(':')[1])  // can throw an error
+                // store current time
+                let ctime = (new Date()).getTime().toString().slice(0, -3)
+                // from spec: 5 mins = 300 seconds
+                if (ctime - mtime >= 300) {
+                    throw 'too late, message expiration time 5 mins'
+                }
+                // Verify validity of signature
+                if (!bitcoinMessage.verify(message, address, signature)) { // can throw an error
+                    throw 'message verification failed'
+                }
+                // Create the block
+                let block = new BlockClass.Block({ owner: address, star: star })
+                // Add the block and pass it on to the then step in line 
+                self._addBlock(block).then(function (b) {
+                    resolve(b)
+                }).catch(err => {
+                    reject(err)
+                })
+            } catch (error) {
+                // report the boo-boo
+                reject(error)
+            }
+        })
     }
 
     /**
@@ -115,8 +193,22 @@ class Blockchain {
     getBlockByHash(hash) {
         let self = this;
         return new Promise((resolve, reject) => {
-           
-        });
+            // considered Array.filter, rejected
+            // * No requirements for constant time
+            // * There is only one match, so we can break after finding it
+            // * Average search time = .5 * height
+            let block = null
+            for (var i = 0; i < self.chain.length; i++) {
+                if (self.chain[i].hash === hash) {
+                    block = Object.create(self.chain[i])
+                    break
+                }
+            }
+            if (block)
+                resolve(block)
+            else
+                reject(`No block with hash: ${hash}`)
+        })
     }
 
     /**
@@ -128,12 +220,12 @@ class Blockchain {
         let self = this;
         return new Promise((resolve, reject) => {
             let block = self.chain.filter(p => p.height === height)[0];
-            if(block){
+            if (block) {
                 resolve(block);
             } else {
                 resolve(null);
             }
-        });
+        })
     }
 
     /**
@@ -142,12 +234,26 @@ class Blockchain {
      * Remember the star should be returned decoded.
      * @param {*} address 
      */
-    getStarsByWalletAddress (address) {
+    getStarsByWalletAddress(address) {
         let self = this;
         let stars = [];
         return new Promise((resolve, reject) => {
-            
-        });
+            for (var i = 1; i < self.chain.length; i++) { // Start at block 1, skip genesis
+                let block = self.chain[i]
+                block.getBData().then(star => {
+                    if (star.owner === address) {
+                        stars.push(star)
+                    }
+                }, err => {
+                    reject(err)
+                })
+                //let r = JSON.parse(hex2ascii(self.chain[i].body))
+                //if (r.owner === address) {
+                //    stars.push(r)
+                //}
+            }
+            resolve(stars)
+        })
     }
 
     /**
@@ -160,10 +266,30 @@ class Blockchain {
         let self = this;
         let errorLog = [];
         return new Promise(async (resolve, reject) => {
-            
-        });
+            for (let i = 0; i < self.chain.length; i++) {
+                // check the block
+                self.chain[i].validate().then(isOk => {
+                    if (!isOk) {
+                        errorLog.push(`block ${i} hash is invalid`)
+                    }
+//                }).catch(err => {
+//                    reject(err)
+                })
+                // check previous block hash
+                if (i > 0) {
+                    if (self.chain[i].previousBlockHash !== self.chain[i - 1].hash) {
+                        errorLog.push(`block ${i} previous block hash is not equal to block ${i} hash`)
+                    }
+                }
+                // check the time and the height
+                if (self.chain[i].height != i || (i > 0 && self.chain[i].time < self.chain[i - 1].time)) {
+                    errorLog.push(`Chain appears out of order at block ${i}`)
+                }
+            }
+            resolve(errorLog)
+        })
     }
 
 }
 
-module.exports.Blockchain = Blockchain;   
+module.exports.Blockchain = Blockchain;
