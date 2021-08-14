@@ -448,3 +448,48 @@ You should see in your terminal a message indicating that the server is listenin
 10. Call validateChain endpoint
     Expected valid and 13 records.
     ![](screenshots/p1test__00009.png)
+
+### Feedback
+
+1. The call await `this._addBlock(block)` is problematic. It is in conflict with the spec in the rubric:
+      > Must return a Promise that will resolve with the block added OR reject if an error happen during the execution
+    await only handles the resolve path of the promise, not the reject path.
+
+    ```javascript
+    async initializeChain() {
+        if( this.height === -1){
+            let block = new BlockClass.Block({data: 'Genesis Block'});
+            await this._addBlock(block);
+        }
+    }
+    ```
+
+    Changed that to 
+
+    ```javascript
+    async initializeChain() {
+        if (this.height === -1) {
+            let block = new BlockClass.Block({ data: 'Genesis Block' });
+            // (node:547420) UnhandledPromiseRejectionWarning: block 0 hash is invalid
+            // <node_internals>/internal/process/warning.js:25
+            // (node:547420) UnhandledPromiseRejectionWarning: Unhandled promise rejection. This error originated either by throwing inside of an async function without a catch block, or by rejecting a promise which was not handled with .catch(). (rejection id: 2)
+            // <node_internals>/internal/process/warning.js:25
+            // (node:547420) [DEP0018] DeprecationWarning: Unhandled promise rejections are deprecated. In the future, promise rejections that are not handled will terminate the Node.js process with a non-zero exit code.
+            // `await` only handles the resolved promise. Since _addblock can reject a promise,
+            // as per spec, we have to deal with it either wrap in a try-catch
+            // or deal with it as promise.
+            this._addBlock(block).then(b => {
+                return
+            }).catch(e => {
+                throw e
+            });
+        }
+    }
+    ```
+2. I'm not convinced that there are no concurrency issues lurking in the reading and updating of the blockchain.
+   I will do some more testing to be convinced that concurrency is not a problem, but I think it makes sense to 
+   implement some read/write locking mechanism for the chain or explain to students that these issues exist but
+   they need not be further explored for this course.
+3. The chosen hex2ascii solution mangles the output:
+    ![](screenshots/p1test__00010.png).
+    Since the ° character I suspect is encoded as utf-8, stray extra bytes from utf-8 encoding appear in the output, because it is forced as ascii, even though the Content-Type of the response is `application/json; charset=utf-8`
