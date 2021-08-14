@@ -210,7 +210,7 @@ You should see in your terminal a message indicating that the server is listenin
     ![](screenshots/p1test__00000.png)
 
 2. Place get call to http://127.0.0.1:8000/block/height/0
-    ![](screenshots/p1test__00002.png)
+    ![](screenshots/p1test__00001.png)
 3. Post a JSON document to http://127.0.0.1:8000/requestValidation
 
     ```json
