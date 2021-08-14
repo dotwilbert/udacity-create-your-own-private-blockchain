@@ -10,8 +10,6 @@
  */
 
 const SHA256 = require('crypto-js/sha256');
-const hex2ascii = require('hex2ascii');
-
 class Block {
 
     // Constructor - argument data will be the object containing the transaction data
@@ -89,7 +87,9 @@ class Block {
                 // Decoding the data to retrieve the JSON representation of the object
                 // Parse the data to an object to be retrieve.
                 // Resolve with the data if the object isn't the Genesis block
-                let o = JSON.parse(hex2ascii(_body))
+                // hex2ascii mangles the characters
+                // let o = JSON.parse(hex2ascii(_body))
+                let o = JSON.parse((Buffer(_body, 'hex')).toString('utf8'))
                 resolve(o)
             } catch (error) {
                 reject(error)
