@@ -491,6 +491,9 @@ You should see in your terminal a message indicating that the server is listenin
    implement some read/write locking mechanism for the chain or explain to students that these issues exist but
    they need not be further explored for this course.
 3. The chosen hex2ascii solution mangles the output:
+ 
     ![](screenshots/p1test__00010.png).
+
     Since the ° character I suspect is encoded as utf-8, stray extra bytes from utf-8 encoding appear in the output, because it is forced as ascii, even though the Content-Type of the response is `application/json; charset=utf-8`. The suspicion was correct. Fixed in `block.js`
+ 
     ![](screenshots/p1test__00011.png) 
