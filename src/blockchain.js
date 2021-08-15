@@ -11,7 +11,6 @@
 const SHA256 = require('crypto-js/sha256');
 const BlockClass = require('./block.js');
 const bitcoinMessage = require('bitcoinjs-message');
-const hex2ascii = require('hex2ascii');
 
 class Blockchain {
 
@@ -247,10 +246,6 @@ class Blockchain {
                 }, err => {
                     reject(err)
                 })
-                //let r = JSON.parse(hex2ascii(self.chain[i].body))
-                //if (r.owner === address) {
-                //    stars.push(r)
-                //}
             }
             resolve(stars)
         })
