@@ -451,7 +451,7 @@ You should see in your terminal a message indicating that the server is listenin
 
 ### Feedback
 
-1. The call await `this._addBlock(block)` is problematic. It is in conflict with the spec in the rubric:
+1. The call `await this._addBlock(block)` is problematic. It is in conflict with the spec in the rubric:
       > Must return a Promise that will resolve with the block added OR reject if an error happen during the execution
     await only handles the resolve path of the promise, not the reject path.
 
